@@ -1,12 +1,12 @@
 # Story Actions
 
-GitHub-Actions で StoryBook をビルドし、GitHub-Pages にデプロイします
-ここではサンプルプロジェクトとしてStoryBook+React構成を使用しています
+- GitHub-Actions で StoryBook をビルドし、GitHub-Pages にデプロイします
+ここではサンプルプロジェクトとしてStoryBook+React構成を使用しています  
+  [出力例](https://sorakumo001.github.io/story-actions/)  
 
 ## 使い方
 
 - yarn build-story コマンドで、StoryBook がビルドできる環境を整える  
-  [出力例](https://sorakumo001.github.io/story-actions/)
 - 以下ファイルをプロジェクトディレクトリに入れるとGitHub-Actionsを利用することができます
 
 ```.sh
