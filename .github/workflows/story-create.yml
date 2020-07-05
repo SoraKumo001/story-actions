@@ -1,0 +1,48 @@
+name: Create StoryBook Page
+on:
+  push:
+jobs:
+  Create:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Cache node_modules
+        id: cache
+        uses: actions/cache@v1
+        with:
+          path: node_modules
+          key: ${{ runner.OS }}-build-${{ hashFiles('yarn.lock') }}
+          restore-keys: ${{ runner.OS }}-build-${{ env.cache-name }}
+      - name: Install Dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: yarn
+      - name: build storybook
+        run: yarn build-storybook
+      - name: Create gh-pages
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+        run: |
+          BRANCH=`echo $GITHUB_REF | sed 's/^refs\/heads\///' | sed -e 's/\//-/g'`
+          git clone https://${GITHUB_ACTOR}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY} -b gh-pages __gh-pages__ || mkdir __gh-pages__
+          rm -rf __gh-pages__/${BRANCH} || true
+          mv storybook-static __gh-pages__/${BRANCH}
+          cp -f .github/workflows/res/index.html __gh-pages__
+          cd __gh-pages__
+          ls -d */ | sed 's/\///g' > index.txt
+      - name: Save gh-pages
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+        run: |
+          cd __gh-pages__
+          if [ ! -d ./.git ]; then
+            git init
+            git checkout -b gh-pages
+            git remote add origin https://${GITHUB_ACTOR}:${GITHUB_TOKEN}@github.com/$GITHUB_REPOSITORY
+          else
+            git remote set-url origin https://${GITHUB_ACTOR}:${GITHUB_TOKEN}@github.com/$GITHUB_REPOSITORY
+          fi
+          git config --global user.name $GITHUB_ACTOR
+          git config --global user.email ${GITHUB_ACTOR}@git
+          git add .
+          git commit -m "$GITHUB_REF"
+          git push origin gh-pages || true

@@ -1,0 +1,22 @@
+name: Delete StoryBook Page 
+on:
+  delete:
+jobs:
+  Delete:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Delete gh-pages
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+        run: |
+          BRANCH=`echo $GITHUB_REF | sed 's/^refs\/heads\///' | sed -e 's/\//-/g'`
+          git clone https://${GITHUB_ACTOR}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY} -b gh-pages __gh-pages__ || exit
+          rm -rf __gh-pages__/${BRANCH}
+          cd __gh-pages__
+          ls -d */ | sed 's/\///g' > index.txt
+          git config --global user.name $GITHUB_ACTOR
+          git config --global user.email ${GITHUB_ACTOR}@git
+          git add .
+          git commit -m "$GITHUB_REF"
+          git push origin gh-pages || true

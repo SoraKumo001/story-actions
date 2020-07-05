@@ -1,0 +1,30 @@
+<html>
+  <head>
+    <style>
+      a {
+        display: block;
+        margin: 2px;
+        padding: 8px;
+        background-color: antiquewhite;
+        border-radius: 8px;
+      }
+      a:hover{
+        background-color: bisque;
+      }
+    </style>
+    <script>
+      addEventListener("DOMContentLoaded", async () => {
+        const res = await fetch("./index.txt");
+        const dirs = (await res.text()).split("\n").filter((v) => v);
+        const { body } = document;
+        dirs.forEach((dir) => {
+          const a = document.createElement("a");
+          a.href = `./${dir}/index.html`;
+          a.innerText = dir;
+          body.appendChild(a);
+        });
+      });
+    </script>
+  </head>
+  <body></body>
+</html>
