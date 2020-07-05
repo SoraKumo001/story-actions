@@ -17,34 +17,37 @@ jobs:
       - name: Install Dependencies
         if: steps.cache.outputs.cache-hit != 'true'
         run: yarn
-      - name: build storybook
+      - name: Build storybook
         run: yarn build-storybook
-      - name: Create gh-pages
+      - name: Git init
         env:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
-        run: |
+        run: |          
           BRANCH=`echo $GITHUB_REF | sed 's/^refs\/heads\///' | sed -e 's/\//-/g'`
-          git clone https://${GITHUB_ACTOR}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY} -b gh-pages __gh-pages__ || mkdir -p __gh-pages__/stories
-          rm -rf __gh-pages__/stories/${BRANCH} || true
-          mv storybook-static __gh-pages__/stories/${BRANCH}
-          cp -f .github/workflows/res/index.html __gh-pages__
-          cd __gh-pages__/stories
-          ls -d */ | sed 's/\///g' > index.txt
-      - name: Save gh-pages
-        env:
-          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+          mkdir -p __gh-pages__/stories
+          cd __gh-pages__
+          git init
+          git config --global user.name $GITHUB_ACTOR
+          git config --global user.email ${GITHUB_ACTOR}@git
+          git config core.sparsecheckout true
+          git remote add origin https://${GITHUB_ACTOR}:${GITHUB_TOKEN}@github.com/$GITHUB_REPOSITORY
+          echo /stories/${BRANCH} > .git/info/sparse-checkout
+          echo /stories/index.txt >> .git/info/sparse-checkout
+          echo /index.html >> .git/info/sparse-checkout
+          git pull origin gh-pages || true
+          git checkout -b gh-pages
+      - name: Create gh-pages
         run: |
           BRANCH=`echo $GITHUB_REF | sed 's/^refs\/heads\///' | sed -e 's/\//-/g'`
           cd __gh-pages__
-          if [ ! -d ./.git ]; then
-            git init
-            git checkout -b gh-pages
-            git remote add origin https://${GITHUB_ACTOR}:${GITHUB_TOKEN}@github.com/$GITHUB_REPOSITORY
-          else
-            git remote set-url origin https://${GITHUB_ACTOR}:${GITHUB_TOKEN}@github.com/$GITHUB_REPOSITORY
-          fi
-          git config --global user.name $GITHUB_ACTOR
-          git config --global user.email ${GITHUB_ACTOR}@git
+          rm -rf stories/${BRANCH} || true
+          mv ../storybook-static stories/${BRANCH}
+          cp -f ../.github/workflows/res/index.html .
+          cd stories
+          ls -d */ | sed 's/\///g' > index.txt
+      - name: Save gh-pages
+        run: |
+          cd __gh-pages__
           git add .
           git commit -m "$GITHUB_REF" || true
           git push origin gh-pages || true
