@@ -26,7 +26,7 @@ jobs:
           BRANCH=`echo ${{github.event.ref}} | sed -e 's/\//-/g'`
           cd __gh-pages__
           rm -rf stories/${BRANCH} || exit 0
-          echo -e "`git ls-files | sed -r 's/^stories\/([^\/]+)\/.*/\1/;t;d'`" | grep -v '${BRANCH}' > stories/index.txt
+          echo -e "`git ls-files | sed -r 's/^stories\/([^\/]+)\/.*/\1/;t;d'`" | uniq | grep -v '${BRANCH}' > stories/index.txt
       - name: Save gh-pages
         run: |
           cd __gh-pages__
