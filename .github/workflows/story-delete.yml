@@ -5,18 +5,31 @@ jobs:
   Delete:
     runs-on: ubuntu-latest
     steps:
-      - name: Delete gh-pages
+      - name: Git init # cloneせずに、最小限のファイルのみを管理対象とする
         env:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
-        run: |
+        run: |          
           BRANCH=`echo ${{github.event.ref}} | sed -e 's/\//-/g'`
-          git clone https://${GITHUB_ACTOR}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY} -b gh-pages __gh-pages__ || exit 0
-          rm -rf __gh-pages__/stories/${BRANCH} || exit 0
+          mkdir -p __gh-pages__/stories
           cd __gh-pages__
-          ls -d */ | sed 's/\///g' > stories/index.txt
+          git init
           git config --global user.name $GITHUB_ACTOR
           git config --global user.email ${GITHUB_ACTOR}@git
+          git config core.sparsecheckout true
+          git remote add origin https://${GITHUB_ACTOR}:${GITHUB_TOKEN}@github.com/$GITHUB_REPOSITORY
+          echo /stories/${BRANCH} > .git/info/sparse-checkout
+          echo /stories/index.txt >> .git/info/sparse-checkout
+          git pull origin gh-pages || true
+          git checkout -b gh-pages
+      - name: Delete gh-pages
+        run: |
+          BRANCH=`echo ${{github.event.ref}} | sed -e 's/\//-/g'`
+          cd __gh-pages__/stories
+          rm -rf ./${BRANCH} || exit 0
+          ls -d */ | sed 's/\///g' > index.txt
+      - name: Save gh-pages
+        run: |
+          cd __gh-pages__
           git add .
-          git commit -m "${BRANCH}"
+          git commit -m "${{github.event.ref}}" || true
           git push origin gh-pages || true
-

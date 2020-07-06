@@ -19,7 +19,7 @@ jobs:
         run: yarn
       - name: Build storybook
         run: yarn build-storybook
-      - name: Git init
+      - name: Git init # cloneせずに、最小限のファイルのみを管理対象とする
         env:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
         run: |          
@@ -47,7 +47,8 @@ jobs:
           ls -d */ | sed 's/\///g' > index.txt
       - name: Save gh-pages
         run: |
+          BRANCH=`echo $GITHUB_REF | sed 's/^refs\/heads\///'`
           cd __gh-pages__
           git add .
-          git commit -m "$GITHUB_REF" || true
+          git commit -m "$BRANCH" || true
           git push origin gh-pages || true
