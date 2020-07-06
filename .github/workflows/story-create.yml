@@ -43,7 +43,6 @@ jobs:
           rm -rf stories/${BRANCH} || true
           mv ../storybook-static stories/${BRANCH}
           cp -f ../.github/workflows/res/index.html .
-          cd stories
           echo -e "`git ls-files | sed -r 's/^stories\/([^\/]+)\/.*/\1/;t;d'`\n${BRANCH}" | uniq > stories/index.txt
       - name: Save gh-pages
         run: |

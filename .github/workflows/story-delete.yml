@@ -24,8 +24,9 @@ jobs:
       - name: Delete gh-pages
         run: |
           BRANCH=`echo ${{github.event.ref}} | sed -e 's/\//-/g'`
-          cd __gh-pages__/stories
-          rm -rf ./${BRANCH} || exit 0
+          cd __gh-pages__
+          rm -rf .stories/${BRANCH} || exit 0
+          echo -e "`git ls-files | sed -r 's/^stories\/([^\/]+)\/.*/\1/;t;d'`" | grep -v '${BRANCH}' > stories/index.txt
           ls -d */ | sed 's/\///g' > index.txt
       - name: Save gh-pages
         run: |
